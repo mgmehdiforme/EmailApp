@@ -1,4 +1,4 @@
-﻿using EmailApp.Models;
+﻿using EmailApp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 

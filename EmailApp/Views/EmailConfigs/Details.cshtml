@@ -1,8 +1,8 @@
-﻿@model EmailApp.Models.EmailConfig
+﻿@model EmailApp.DataModels.EmailConfig
 
 @{
     ViewData["Title"] = "Details";
-    Layout = "~/Views/Home/Index.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h1>Details</h1>
@@ -30,10 +30,34 @@
             @Html.DisplayFor(model => model.SmtpServer)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Port)
+            @Html.DisplayNameFor(model => model.SmtpPort)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Port)
+            @Html.DisplayFor(model => model.SmtpPort)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.UseSSLForSmtp)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.UseSSLForSmtp)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ImapServer)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ImapServer)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ImapPort)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ImapPort)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.UseSSLForImap)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.UseSSLForImap)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.UserName)

@@ -1,8 +1,8 @@
-﻿@model EmailApp.Models.EmailConfig
+﻿@model EmailApp.DataModels.EmailConfig
 
 @{
     ViewData["Title"] = "Edit";
-    Layout = "~/Views/Home/Index.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h1>Edit</h1>
@@ -30,9 +30,29 @@
                 <span asp-validation-for="SmtpServer" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Port" class="control-label"></label>
-                <input asp-for="Port" class="form-control" />
-                <span asp-validation-for="Port" class="text-danger"></span>
+                <label asp-for="SmtpPort" class="control-label"></label>
+                <input asp-for="SmtpPort" class="form-control" />
+                <span asp-validation-for="SmtpPort" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="UseSSLForSmtp" /> @Html.DisplayNameFor(model => model.UseSSLForSmtp)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImapServer" class="control-label"></label>
+                <input asp-for="ImapServer" class="form-control" />
+                <span asp-validation-for="ImapServer" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImapPort" class="control-label"></label>
+                <input asp-for="ImapPort" class="form-control" />
+                <span asp-validation-for="ImapPort" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="UseSSLForImap" /> @Html.DisplayNameFor(model => model.UseSSLForImap)
+                </label>
             </div>
             <div class="form-group">
                 <label asp-for="UserName" class="control-label"></label>

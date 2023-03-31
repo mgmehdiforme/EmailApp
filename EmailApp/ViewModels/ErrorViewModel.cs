@@ -1,4 +1,4 @@
-namespace EmailApp.Models
+namespace EmailApp.ViewModels
 {
     public class ErrorViewModel
     {

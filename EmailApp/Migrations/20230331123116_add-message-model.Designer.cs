@@ -4,6 +4,7 @@ using EmailApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmailApp.Migrations
 {
     [DbContext(typeof(EmailAppContext))]
-    partial class EmailAppContextModelSnapshot : ModelSnapshot
+    [Migration("20230331123116_add-message-model")]
+    partial class addmessagemodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,13 +48,6 @@ namespace EmailApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Pop3Port")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Pop3Server")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("SmtpPort")
                         .HasColumnType("int");
 
@@ -59,13 +55,7 @@ namespace EmailApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("UseImap")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("UseSSLForImap")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("UseSSLForPop3")
                         .HasColumnType("bit");
 
                     b.Property<bool>("UseSSLForSmtp")

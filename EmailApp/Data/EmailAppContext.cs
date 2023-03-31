@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using EmailApp.Models;
+using EmailApp.ViewModels;
 
 namespace EmailApp.Data
 {
@@ -14,6 +14,7 @@ namespace EmailApp.Data
         {
         }
 
-        public DbSet<EmailApp.Models.EmailConfig> EmailConfig { get; set; } = default!;
+        public DbSet<EmailApp.DataModels.EmailConfig> EmailConfig { get; set; } = default!;
+        public DbSet<EmailApp.DataModels.EmailMessage> EmailMessage { get; set; } = default!;
     }
 }

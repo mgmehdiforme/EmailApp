@@ -1,13 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using EmailApp.Data;
+using EmailApp.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<EmailAppContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EmailAppContext") ?? throw new InvalidOperationException("Connection string 'EmailAppContext' not found.")));
 
 // Add services to the container.
+builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddControllersWithViews();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
