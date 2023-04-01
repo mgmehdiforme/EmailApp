@@ -8,7 +8,7 @@ builder.Services.AddDbContext<EmailAppContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EmailAppContext") ?? throw new InvalidOperationException("Connection string 'EmailAppContext' not found.")));
 
 // Add services to the container.
-builder.Services.AddSingleton<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddControllersWithViews();
 var app = builder.Build();
 

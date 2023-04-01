@@ -162,13 +162,11 @@ namespace EmailApp.Controllers
         #endregion
 
         #region Inbox
-
-        // GET: EmailConfigs/Create
-        public IActionResult Inbox(int id)
+        // GET: InboxView
+        public IActionResult Inbox(int pageNumber, int id)
         {
-            var config=_context.EmailConfig.First(x => x.Id == id);
-            List<MimeKit.MimeMessage> list =_emailService.ReadMessagesImap(config,SearchQuery.All);
-            return View(list);
+            var inboxView = _emailService.GetInbox(pageNumber, id);
+            return View(inboxView);
         }
         #endregion
 

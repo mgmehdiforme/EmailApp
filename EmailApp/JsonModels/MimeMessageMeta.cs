@@ -1,6 +1,6 @@
 ﻿namespace EmailApp.JsonModels
 {
-    public class MimeMessageMeta
+    public class MimeMessageMetaModel
     {
 
         // The list of addresses in the From header
@@ -17,5 +17,6 @@
 
         // The list of addresses in the Reply-To header
         public List<string> ReplyTo { get; set; }
+        public string BodyHtml { get; set; }
     }
 }

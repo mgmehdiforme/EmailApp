@@ -1,4 +1,6 @@
-﻿@model IEnumerable<MimeKit.MimeMessage>
+﻿@using EmailApp.DataModels;
+@using EmailApp.ViewModels;
+@model InboxViewModel
 
 @{
     ViewData["Title"] = "Inbox";
@@ -10,28 +12,30 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+@{
+    IEnumerable<EmailMessage> emailMessages = Model.EmailMessages.AsEnumerable();
+}
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Date)
+                Date
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Subject)
+                Subject
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Sender)
+                From
             </th>
-
             <th>
-                @Html.DisplayNameFor(model => model.Priority)
+                Priority
             </th>
             
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.EmailMessages) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Date)
@@ -40,17 +44,15 @@
                 @Html.DisplayFor(modelItem => item.Subject)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Sender.Address)
+                @Html.DisplayFor(modelItem => item.From)
             </td>
-
             <td>
                 @Html.DisplayFor(modelItem => item.Priority)
             </td>
 
-
             <td>
                 <a asp-action="Edit" asp-route-id="@item.MessageId">View</a> 
-                    <a asp-action="Archive" asp-route-id="@item.MessageId">Archive</a> |
+                <a asp-action="Archive" asp-route-id="@item.MessageId">Archive</a> |
                 <a asp-action="Delete" asp-route-id="@item.MessageId">Delete</a>
             </td>
         </tr>

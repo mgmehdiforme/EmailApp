@@ -4,17 +4,29 @@ using MailKit.Security;
 using MailKit;
 using EmailApp.DataModels;
 using MailKit.Net.Pop3;
+using EmailApp.ViewModels;
+using EmailApp.Data;
+using EmailApp.JsonModels;
+using System.Drawing.Printing;
+using System.Net.Mail;
 
 namespace EmailApp.Services
 {
     public interface IEmailService
-    {
-        List<MimeKit.MimeMessage> ReadMessagesPop3(EmailConfig config, SearchQuery searchQuery = null, int maxCount = 10);
+    {        
         List<MimeKit.MimeMessage> ReadMessagesImap(EmailConfig config, SearchQuery searchQuery = null);
+        InboxViewModel GetInbox(int pageNumber, int ConfigId);
     }
 
     public class EmailService:IEmailService
     {
+        private readonly EmailAppContext _context;
+
+        public EmailService(EmailAppContext context)
+        {
+            _context = context;
+        }
+
         /// <summary>
         /// Read Messages from Inbox
         /// </summary>
@@ -50,53 +62,69 @@ namespace EmailApp.Services
                 messages.Add(imap.Inbox.GetMessage(item));
             }
 
-            // ... load or create the message
-            //var label = messages[0].Headers["X-Label"]; // get the value of the 
-            //var priority = messages[0].Headers["X-Priority"]; // get 
-            //var flagged = messages[0].Headers["Flagged"]; // get 
-
             // disconnect from IMAP server
             imap.Disconnect(true);
             return messages;
         }
 
-        /// <summary>
-        /// Read Messages from Inbox
-        /// </summary>
-        /// <param name="config">where to connect</param>
-        /// <param name="searchQuery">what read default is new messages </param>
-        /// <returns>list of message</returns>
-        public List<MimeKit.MimeMessage> ReadMessagesPop3(EmailConfig config, SearchQuery searchQuery = null, int maxCount = 10)
+        public InboxViewModel GetInbox(int pageNumber,int ConfigId)
         {
-            if (searchQuery == null)
-                searchQuery = SearchQuery.New;
+            var result=new InboxViewModel();
 
-            // Create a new Pop3Client instance
-            using (var emailClient = new Pop3Client())
+            var searchQuery = SearchQuery.New;
+            if (_context.EmailMessage.Count() == 0)
+                searchQuery = SearchQuery.All;
+
+            List<MimeKit.MimeMessage> serverMessages = new List<MimeKit.MimeMessage>();
+            var config = _context.EmailConfig.Find(ConfigId);
+            try
             {
-                // Connect to the POP3 server using SSL
-                emailClient.Connect(config.Pop3Server, config.Pop3Port, config.UseSSLForPop3);
-                // Remove any authentication mechanisms that require OAuth 2.0
-                emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-                // Authenticate with the POP3 server
-                emailClient.Authenticate(config.UserName, config.Password);
-
-                // Create a list to store the email messages
-                List<MimeKit.MimeMessage> emails = new List<MimeKit.MimeMessage>();
-
-                // Loop through the messages on the server up to the maxCount
-                for (int i = 0; i < emailClient.Count && i < maxCount; i++)
-                {
-                    // Get the message from the server
-                    var message = emailClient.GetMessage(i);
-                    // Add the sender and recipient addresses
-                    //emailMessage.FromAddresses.AddRange(message.From.Select(x => (MailboxAddress)x).Select(x => new EmailAddress { Address = x.Address, Name = x.Name }));
-                    //emailMessage.ToAddresses.AddRange(message.To.Select(x => (MailboxAddress)x).Select(x => new EmailAddress { Address = x.Address, Name = x.Name }));
-                    // Add the email message to the list
-                    emails.Add(message);
-                }
-                return emails;
+                serverMessages= ReadMessagesImap(config, searchQuery);
             }
+            catch (Exception ex)
+            {
+                result.SyncError ="Your Mail Box not Sync : "+ex.Message;
+            }
+            //var label = messages[0].Headers["X-Label"]; // get the value of the 
+            //var priority = messages[0].Headers["X-Priority"]; // get 
+            //var flagged = messages[0].Headers["Flagged"]; // get 
+            serverMessages.ForEach(x =>
+            {
+                _context.EmailMessage.Add(new EmailMessage
+                {
+                    Date = x.Date,
+                    EmailConfigId = config.Id,
+                    Flagged = x.Headers["Flagged"],
+                    Label = x.Headers["X-Label"],
+                    Priority = x.Headers["X-Priority"],
+                    MessageId = x.MessageId,
+                    From = x.From.First().Name,
+                    Subject = x.Subject,
+                    JsonMessageMetadata = Newtonsoft.Json.JsonConvert.SerializeObject(new MimeMessageMetaModel()
+                    {
+                        Bcc = x.Bcc.Select(b => b.Name).ToList(),
+                        Cc = x.Cc.Select(c => c.Name).ToList(),
+                        From = x.From.Select(f => f.Name).ToList(),
+                        ReplyTo = x.ReplyTo.Select(r => r.Name).ToList(),
+                        To = x.To.Select(x => x.Name).ToList(),
+                        BodyHtml = x.HtmlBody,
+                    })
+                });
+            });
+            _context.SaveChanges();
+            var pageSize = 15;
+            var startIndex = pageSize * (pageNumber - 1);
+            var endIndex = startIndex + pageSize - 1;
+            var totalCount = _context.EmailMessage.Count();
+
+            if (endIndex >= totalCount)
+            {
+                endIndex = totalCount - 1;
+            }
+            
+            result.EmailMessages= _context.EmailMessage.Skip(startIndex).Take(endIndex).ToList();
+            result.CurrentPageNumber = pageNumber;
+            return result;
         }
     }
 }

@@ -14,9 +14,6 @@ namespace EmailApp.DataModels
         public string ImapServer { get; set; }
         public int ImapPort { get; set; }
         public bool UseSSLForImap { get; set; }
-        public string Pop3Server { get; set; }
-        public int Pop3Port { get; set; }
-        public bool UseSSLForPop3 { get; set; }
         public bool UseImap { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
