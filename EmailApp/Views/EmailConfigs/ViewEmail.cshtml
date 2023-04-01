@@ -1,0 +1,22 @@
+﻿@using EmailApp.ViewModels;
+@model EmailMessageViewModel
+
+<h2>Subject : @Model.Subject</h2>
+<h3>From : @Model.From</h3>
+@if (Model.Attachments.Any())
+{
+    <fieldset>
+        <legend>Attachments</legend>
+        <ul>
+            @foreach (var item in Model.Attachments)
+            {
+                <li><a asp-action="DownloadAttachment" asp-route-id="@Model.Id" asp-route-file="@item.Key">@item.Value</a></li>
+            }
+        </ul>
+    </fieldset>
+}
+
+<div style="overflow:scroll;">
+    @Html.Raw(Model.BodyHtml)
+</div>
+

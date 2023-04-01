@@ -51,7 +51,7 @@
             </td>
 
             <td>
-                <a asp-action="Edit" asp-route-id="@item.MessageId">View</a> 
+                <a asp-action="ViewEmail" asp-route-id="@item.Id">View</a>
                 <a asp-action="Archive" asp-route-id="@item.MessageId">Archive</a> |
                 <a asp-action="Delete" asp-route-id="@item.MessageId">Delete</a>
             </td>
@@ -59,3 +59,16 @@
 }
     </tbody>
 </table>
+
+@if (Model.CurrentPageNumber > 1)
+{
+    <a asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber-1)">Previous Page</a>    
+}
+@for (int i = 1; i <= Model.TotalPageCount; i++)
+{
+    <a asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(i)"> | @i | </a>
+}
+@if (Model.CurrentPageNumber < Model.TotalPageCount)
+{
+    <a asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber+1)">Next Page</a>
+}

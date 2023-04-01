@@ -9,6 +9,9 @@ using EmailApp.Data;
 using EmailApp.DataModels;
 using EmailApp.Services;
 using MailKit.Search;
+using System.Configuration.Internal;
+using System.IO;
+using System.Net.Mail;
 
 namespace EmailApp.Controllers
 {
@@ -162,11 +165,29 @@ namespace EmailApp.Controllers
         #endregion
 
         #region Inbox
-        // GET: InboxView
+        // GET: Inbox View
         public IActionResult Inbox(int pageNumber, int id)
         {
             var inboxView = _emailService.GetInbox(pageNumber, id);
             return View(inboxView);
+        }
+
+        // GET:  message view
+        public IActionResult ViewEmail(int id)
+        {
+            var inboxView = _emailService.GetMessage(id);
+            return View(inboxView);
+        }
+
+        // GET:  download attachment
+        public IActionResult DownloadAttachment(int id,string file)
+        {
+            var attachmentView = _emailService.GetAttachment(id, file);
+            if (attachmentView == null || attachmentView.FileStream == null)
+                return BadRequest("file not find");
+
+            // Return the attachment as a file download
+            return File(attachmentView.FileStream, "application/octet-stream", attachmentView.FileName ?? attachmentView.ContentType);
         }
         #endregion
 

@@ -6,7 +6,9 @@ namespace EmailApp.ViewModels
     {
         public List<EmailMessage> EmailMessages { get; set; }=new List<EmailMessage>();
         public int CurrentPageNumber { get; set; } = 1;
-        public bool SyncedWithInbox { get; set; } = false;
+        public bool Synced { get; set; } = false;
         public string SyncError { get; set; } = "";
+        public int TotalPageCount { get; set; }
+        public int ConfigId { get; set; }
     }
 }
