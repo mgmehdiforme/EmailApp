@@ -7,10 +7,16 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
+<div class="container">
 
     <div class="row">
         <div class="col-md-3">
+            <div class="list-group">
+                <a asp-action="Compose" class="btn btn-danger ">
+                    Compose
+                </a>
+            </div>
+            <hr />
             <div class="list-group">
                 <a href="#" class="list-group-item list-group-item-action active">
                     Inbox
@@ -66,11 +72,11 @@
                             </a>
                             <div class="btn-group position-absolute top-50" style="right:30px !important;z-index:999;" role="group">
                                 <a asp-action="SetAsDeleted" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber"
-                                    class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">
+                                   class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">
                                     <i class="fa fa-trash"></i> Delete
                                 </a>
                                 <a asp-action="SetAsArchive" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber"
-                                    class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#archiveModal">
+                                   class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#archiveModal">
                                     <i class="fa fa-archive"></i> @(email.IsArchive ? "UnArchive" : "Archive")
                                 </a>
                             </div>

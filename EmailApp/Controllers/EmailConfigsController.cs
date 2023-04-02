@@ -12,6 +12,7 @@ using MailKit.Search;
 using System.Configuration.Internal;
 using System.IO;
 using System.Net.Mail;
+using EmailApp.ViewModels;
 
 namespace EmailApp.Controllers
 {
@@ -166,6 +167,13 @@ namespace EmailApp.Controllers
         {
             var inboxView = _emailService.GetInbox(pageNumber, id);
             return View(inboxView);
+        }
+
+        // GET: Inbox View
+        public IActionResult Compose(int id)
+        {
+            var model = new SendEmailViewModel();
+            return View(model);
         }
 
         // GET:  message view
