@@ -4,6 +4,7 @@ using EmailApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmailApp.Migrations
 {
     [DbContext(typeof(EmailAppContext))]
-    partial class EmailAppContextModelSnapshot : ModelSnapshot
+    [Migration("20230402063321_addDeletedArchived")]
+    partial class addDeletedArchived
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,9 +100,6 @@ namespace EmailApp.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
                     b.Property<string>("JsonMessageMetadata")

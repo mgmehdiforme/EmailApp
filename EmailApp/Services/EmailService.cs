@@ -8,24 +8,96 @@ using EmailApp.Data;
 using EmailApp.JsonModels;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
+using Microsoft.VisualBasic;
+using System.Collections.Generic;
+using System.Net.Mail;
 
 namespace EmailApp.Services
 {
     public interface IEmailService
-    {                
+    {
+        /// <summary>
+        /// Retrieves a page of email messages for a given email configuration and page number, and returns an InboxViewModel object.
+        /// </summary>
+        /// <param name="pageNumber">An integer representing the page number to retrieve. Must be greater than zero.</param>
+        /// <param name="ConfigId">An integer representing the unique identifier of the email configuration to retrieve messages for.</param>
+        /// <returns>An InboxViewModel object containing a page of email messages and metadata about the email inbox.</returns>
+        /// <remarks>
+        /// This function creates a new InboxViewModel object to hold the results of the operation.
+        /// If the email message count in the database is zero, the function sets a searchQuery variable to All, indicating that all messages should be retrieved from the server.
+        /// Otherwise, the searchQuery variable is set to New, indicating that only new messages should be retrieved.
+        /// The function attempts to read email messages from the server using the specified email configuration and search query.
+        /// If successful, the function populates the EmailMessage entity with message data and adds it to the database.
+        /// The changes are saved to the database using the _context.SaveChanges() method.
+        /// The function then retrieves a page of email messages from the database based on the specified page number and page size.
+        /// Finally, the function populates the InboxViewModel object with the retrieved email messages and metadata, and returns it to the caller.
+        /// </remarks>
         InboxViewModel GetInbox(int pageNumber, int ConfigId);
+
+        /// <summary>
+        /// Retrieves an email message with the given messageId from the database and the server, populates the result with metadata and attachments, and returns it as an EmailMessageViewModel.
+        /// </summary>
+        /// <param name="messageId">The ID of the email message to retrieve.</param>
+        /// <returns>An EmailMessageViewModel object representing the email message.</returns>
+        /// <remarks>
+        /// This method retrieves an email message by its message id from the email server and returns an EmailMessageViewModel object that contains metadata and attachment information.
+        /// It first retrieves the email message from the database using the provided messageId, and then attempts to retrieve the message from the email server.
+        /// If the server retrieval succeeds, the method populates the EmailMessageViewModel object with message metadata and attachment information retrieved from the email server.
+        /// If the server retrieval fails, the method sets the Synced flag in the EmailMessageViewModel object to false and sets the SyncError property to the error message returned by the email server.
+        /// If the email message does not have any attachments, the Attachments dictionary in the EmailMessageViewModel object will be empty.
+        /// </remarks>
         EmailMessageViewModel GetMessage(int messageId);
+
+        /// <summary>
+        /// Retrieves an email attachment for a given message and attachment key, and returns an AttachmentViewModel object.
+        /// </summary>
+        /// <param name="messageId">An integer representing the unique identifier of the email message containing the attachment.</param>
+        /// <param name="attachmentKey">A string representing the unique identifier of the attachment to retrieve.</param>
+        /// <returns>An AttachmentViewModel object containing information about the retrieved attachment, including its filename, content type, and stream.</returns>
+        /// <remarks>
+        /// This function creates a new AttachmentViewModel object to hold the results of the operation.
+        /// The function retrieves the EmailMessage entity with the specified messageId from the database, and includes the associated EmailConfig entity in the query results.
+        /// The function attempts to retrieve the specified attachment from the email server using the GetAttachmentFromServer method.
+        /// If successful, the function populates the AttachmentViewModel object with information about the attachment, including its filename, content type, and stream.
+        /// The function returns the AttachmentViewModel object to the caller.
+        /// If the function encounters an exception while retrieving the attachment, it returns null.
+        /// </remarks>
         AttachmentViewModel GetAttachment(int messageId, string attachmentKey);
+
+        /// <summary>
+        /// Archives an email message by updating its IsArchive property and returns the EmailConfigId of the updated entity.
+        /// </summary>
+        /// <param name="messageId">An integer representing the unique identifier of the email message to archive.</param>
+        /// <returns>An integer representing the EmailConfigId of the updated email message entity.</returns>
+        /// <remarks>
+        /// This function retrieves an email message entity with the specified ID and its related EmailConfig entity using the _context object.
+        /// The function sets the IsArchive property of the retrieved email message entity to true, indicating that the message has been archived.
+        /// The changes are saved to the database using the _context.SaveChanges() method.
+        /// </remarks>
+        int SetMessageAsArchived(int messageId);
+
+        /// <summary>
+        /// Sets the specified email message as deleted by updating the "IsDeleted" flag in the database.
+        /// </summary>
+        /// <param name="messageId">The ID of the email message to mark as deleted.</param>
+        /// <returns>The ID of the email configuration associated with the deleted message.</returns>
+        /// <remarks>
+        /// This method updates the "IsDeleted" flag of the specified email message to mark it as deleted in the database.
+        /// It then saves the changes to the database using the Entity Framework context.
+        /// The method returns the ID of the email configuration associated with the deleted message.
+        /// </remarks>
+        int SetMessageAsDeleted(int messageId);
     }
 
     public class EmailService:IEmailService
     {
         private readonly EmailAppContext _context;
-
+        private const int pageSize = 2;
         public EmailService(EmailAppContext context)
         {
             _context = context;
         }
+
         #region Email Server 
         /// <summary>
         /// Read Inbox Messages from server
@@ -158,7 +230,28 @@ namespace EmailApp.Services
         }
         #endregion
 
+        #region Actions On Database
+        public int SetMessageAsArchived(int messageId)
+        {
+            var dbMessage = _context.EmailMessage.Include(x => x.EmailConfig).First(x => x.Id == messageId);
+            dbMessage.IsArchive = !dbMessage.IsArchive;
+
+            _context.SaveChanges();
+            return dbMessage.EmailConfigId;
+        }
+
+        public int SetMessageAsDeleted(int messageId)
+        {
+            var dbMessage = _context.EmailMessage.Include(x => x.EmailConfig).First(x => x.Id == messageId);
+            dbMessage.IsDeleted = true;
+
+            _context.SaveChanges();
+            return dbMessage.EmailConfigId;
+        }
+        #endregion
+
         #region Return View Models
+
         public InboxViewModel GetInbox(int pageNumber, int ConfigId)
         {
             var result = new InboxViewModel();
@@ -182,36 +275,39 @@ namespace EmailApp.Services
 
             serverMessages.ForEach(x =>
             {
-                _context.EmailMessage.Add(new EmailMessage
+                if (!_context.EmailMessage.Any(y => y.MessageId == x.MessageId))
                 {
-                    Date = x.Date,
-                    EmailConfigId = config.Id,
-                    Flagged = x.Headers["Flagged"],
-                    Label = x.Headers["X-Label"],
-                    Priority = x.Priority.ToString(),
-                    MessageId = x.MessageId,
-                    From = x.From.First().Name,
-                    Subject = x.Subject,
-                    JsonMessageMetadata = Newtonsoft.Json.JsonConvert.SerializeObject(new MimeMessageMetaModel()
+                    _context.EmailMessage.Add(new EmailMessage
                     {
-                        Bcc = x.Bcc.Select(b => b.Name).ToList(),
-                        Cc = x.Cc.Select(c => c.Name).ToList(),
-                        From = x.From.Select(f => f.Name).ToList(),
-                        ReplyTo = x.ReplyTo.Select(r => r.Name).ToList(),
-                        To = x.To.Select(x => x.Name).ToList(),
-                        BodyHtml = x.HtmlBody,
-                    })
-                });
+                        Date = x.Date,
+                        EmailConfigId = config.Id,
+                        Flagged = x.Headers["Flagged"],
+                        Label = x.Headers["X-Label"],
+                        Priority = x.Priority.ToString(),
+                        MessageId = x.MessageId,
+                        From = x.From.First().Name,
+                        Subject = x.Subject,
+                        JsonMessageMetadata = Newtonsoft.Json.JsonConvert.SerializeObject(new MimeMessageMetaModel()
+                        {
+                            Bcc = x.Bcc.Select(b => b.Name).ToList(),
+                            Cc = x.Cc.Select(c => c.Name).ToList(),
+                            From = x.From.Select(f => f.Name).ToList(),
+                            ReplyTo = x.ReplyTo.Select(r => r.Name).ToList(),
+                            To = x.To.Select(x => x.Name).ToList(),
+                            BodyHtml = x.HtmlBody,
+                        })
+                    });
+                }
             });
             _context.SaveChanges();
 
-            var pageSize = 10;
+            
             var startIndex = pageSize * (pageNumber - 1);
-            result.TotalPageCount = _context.EmailMessage.Count() / pageSize;
+            result.TotalPageCount = _context.EmailMessage.Count(x=>!x.IsDeleted) / pageSize;
 
             result.ConfigId = ConfigId;
-
-            result.EmailMessages = _context.EmailMessage.Skip(startIndex).Take(pageSize).ToList();
+            result.CurrentFolderName = "Inbox";
+            result.EmailMessages = _context.EmailMessage.Where(x => !x.IsDeleted).Skip(startIndex).Take(pageSize).ToList();
             result.CurrentPageNumber = pageNumber;
             return result;
         }
@@ -219,7 +315,7 @@ namespace EmailApp.Services
         public EmailMessageViewModel GetMessage(int messageId)
         {
             var result = new EmailMessageViewModel();
-            var dbMessage = _context.EmailMessage.Include(x=>x.EmailConfig).First(x => x.Id == messageId);
+            var dbMessage = _context.EmailMessage.Include(x=>x.EmailConfig).First(x => !x.IsDeleted && x.Id == messageId);
             result.Id=dbMessage.Id;
             MimeMessage message = null;
             try
@@ -260,7 +356,9 @@ namespace EmailApp.Services
             result.Label = dbMessage.Label;
             result.Priority = dbMessage.Priority;
             result.Subject = dbMessage.Subject;
-
+            result.IsArchived = dbMessage.IsArchive;
+            result.ConfigId = dbMessage.EmailConfigId;
+            result.Date = dbMessage.Date;
             if (message != null)
             {
 
@@ -272,7 +370,8 @@ namespace EmailApp.Services
                 result.Subject = message.Subject;
 
             }
-
+            dbMessage.IsRead = true;
+            _context.SaveChanges();
             return result;
         }
 

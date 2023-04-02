@@ -169,10 +169,25 @@ namespace EmailApp.Controllers
         }
 
         // GET:  message view
-        public IActionResult ViewEmail(int id)
+        public IActionResult ViewEmail(int id,int pageNumber)
         {
-            var inboxView = _emailService.GetMessage(id);
-            return View(inboxView);
+            var emailView = _emailService.GetMessage(id);
+            emailView.CurrentPageNuber = pageNumber;
+            return View(emailView);
+        }
+
+        // POST:  Set as archived
+        public IActionResult SetAsArchive(int id, int pageNumber)
+        {
+            var configId = _emailService.SetMessageAsArchived(id);
+            return RedirectToAction(nameof(Inbox), new { PageNumber = pageNumber, id = configId });
+        }
+
+        // POST:  Set as deleted
+        public IActionResult SetAsDeleted(int id, int pageNumber)
+        {
+            var configId = _emailService.SetMessageAsDeleted(id);
+            return RedirectToAction(nameof(Inbox), new { PageNumber = pageNumber, id = configId });
         }
 
         // GET:  download attachment

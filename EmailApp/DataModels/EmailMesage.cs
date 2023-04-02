@@ -35,6 +35,9 @@ namespace EmailApp.DataModels
 
         public string? JsonMessageMetadata { get; set; }
         public virtual EmailConfig  EmailConfig{ get; set; }
+        public bool IsArchive { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool IsRead { get; set; }
     }
 
 

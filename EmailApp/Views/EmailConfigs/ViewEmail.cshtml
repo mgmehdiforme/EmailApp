@@ -1,22 +1,55 @@
 ﻿@using EmailApp.ViewModels;
 @model EmailMessageViewModel
 
-<h2>Subject : @Model.Subject</h2>
-<h3>From : @Model.From</h3>
-@if (Model.Attachments.Any())
-{
-    <fieldset>
-        <legend>Attachments</legend>
-        <ul>
-            @foreach (var item in Model.Attachments)
-            {
-                <li><a asp-action="DownloadAttachment" asp-route-id="@Model.Id" asp-route-file="@item.Key">@item.Value</a></li>
-            }
-        </ul>
-    </fieldset>
-}
 
-<div style="overflow:scroll;">
-    @Html.Raw(Model.BodyHtml)
+<div class="container">
+    <div class="row">        
+            <div class="card">
+                <div class="card-header">
+                    <h4>
+                    <a class="btn btn-primary btn-sm" asp-action="inbox" asp-route-id="@Model.ConfigId" asp-route-PageNumber="@Model.CurrentPageNuber"> Back To Inbox </a>
+                        Subject :                     
+                        @Model.Subject</h4>
+                    <p class="text-muted">
+                    
+                    From: @Model.From
+                    
+                    @if (Model.Synced)
+                    {
+                        <span class="badge bg-success">Synced</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Not Sync : @Model.SyncError</span>
+                    }
+                    @if (Model.IsArchived)
+                    {
+                        <span class="badge bg-danger">Archived</span>
+                    }
+                    </p>                    
+                </div>
+                <div class="card-body">
+                    <p>@Html.Raw(Model.BodyHtml)</p>
+                    <hr />
+                    @if (Model.Attachments != null && Model.Attachments.Count > 0)
+                    {
+                        <h5>Attachments:</h5>
+                        <ul class="list-unstyled">
+                            @foreach (var attachment in Model.Attachments)
+                            {
+                                <li>
+                                    <a asp-action="DownloadAttachment" asp-route-id="@Model.Id" asp-route-file="@attachment.Key" target="_blank">
+                                        <i class="fa fa-file"></i>
+                                        @attachment.Value
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="card-footer text-muted">
+                    <p>Sent: @Model.Date.ToString("MMMM dd, yyyy hh:mm tt")</p>
+                </div>
+            </div>
+    </div>
 </div>
-

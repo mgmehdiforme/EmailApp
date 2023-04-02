@@ -10,5 +10,7 @@ namespace EmailApp.ViewModels
         public string SyncError { get; set; } = "";
         public int TotalPageCount { get; set; }
         public int ConfigId { get; set; }
+        public string CurrentFolderName { get; set; }
+
     }
 }

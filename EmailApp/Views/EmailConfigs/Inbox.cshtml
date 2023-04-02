@@ -7,68 +7,118 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Inbox</h1>
+<div class="container-fluid">
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-@{
-    IEnumerable<EmailMessage> emailMessages = Model.EmailMessages.AsEnumerable();
-}
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Date
-            </th>
-            <th>
-                Subject
-            </th>
-            <th>
-                From
-            </th>
-            <th>
-                Priority
-            </th>
-            
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.EmailMessages) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Date)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Subject)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.From)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Priority)
-            </td>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active">
+                    Inbox
+                    @if (Model.Synced)
+                    {
+                        <span class="badge bg-success">Synced</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Not Sync : @Model.SyncError</span>
+                    }
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    Drafts
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    Archived
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    Sent
+                </a>
+            </div>
+        </div>
+        <div class="col-md-9">
 
-            <td>
-                <a asp-action="ViewEmail" asp-route-id="@item.Id">View</a>
-                <a asp-action="Archive" asp-route-id="@item.MessageId">Archive</a> |
-                <a asp-action="Delete" asp-route-id="@item.MessageId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+            <h3>@Model.CurrentFolderName</h3>
+            <hr />
 
-@if (Model.CurrentPageNumber > 1)
-{
-    <a asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber-1)">Previous Page</a>    
-}
-@for (int i = 1; i <= Model.TotalPageCount; i++)
-{
-    <a asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(i)"> | @i | </a>
-}
-@if (Model.CurrentPageNumber < Model.TotalPageCount)
-{
-    <a asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber+1)">Next Page</a>
-}
+            @if (Model.EmailMessages.Count > 0)
+            {
+                <div class="list-group">
+                    @foreach (var email in Model.EmailMessages)
+                    {
+                        <div class="list-group-item">
+                            <a asp-action="ViewEmail" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">
+                                        @email.From
+                                        @if (!email.IsRead)
+                                        {
+                                            <span class="badge bg-danger badge-danger">New</span>
+                                        }
+                                        @if (email.IsArchive)
+                                        {
+                                            <span class="badge bg-info">Archived</span>
+                                        }
+                                    </h5>
+                                    <small>@email.Date.ToLocalTime().ToString("yyyy-mm-dd")</small>
+                                </div>
+                                <p class="mb-1">
+                                    @email.Subject
+                                </p>
+                            </a>
+                            <div class="btn-group position-absolute top-50" style="right:30px !important;z-index:999;" role="group">
+                                <a asp-action="SetAsDeleted" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber"
+                                    class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">
+                                    <i class="fa fa-trash"></i> Delete
+                                </a>
+                                <a asp-action="SetAsArchive" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber"
+                                    class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#archiveModal">
+                                    <i class="fa fa-archive"></i> @(email.IsArchive ? "UnArchive" : "Archive")
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <nav aria-label="Email navigation">
+                    <ul class="pagination justify-content-center mt-3">
+                        @if (Model.CurrentPageNumber > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" aria-label="Previous" asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber-1)">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                            </li>
+                        }
+                        @for (int i = 1; i <= Model.TotalPageCount; i++)
+                        {
+                            if (i == Model.CurrentPageNumber)
+                            {
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">@i</span>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(i)">@i</a>
+                                </li>
+                            }
+                        }
+                        @if (Model.CurrentPageNumber < Model.TotalPageCount)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber+1)" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">Next</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+            else
+            {
+                <p>No emails found.</p>
+            }
+        </div>
+    </div>
+</div>
