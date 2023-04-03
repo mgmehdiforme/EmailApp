@@ -169,13 +169,6 @@ namespace EmailApp.Controllers
             return View(inboxView);
         }
 
-        // GET: Inbox View
-        public IActionResult Compose(int id)
-        {
-            var model = new SendEmailViewModel();
-            return View(model);
-        }
-
         // GET:  message view
         public IActionResult ViewEmail(int id,int pageNumber)
         {
@@ -207,6 +200,40 @@ namespace EmailApp.Controllers
 
             // Return the attachment as a file download
             return File(attachmentView.FileStream, "application/octet-stream", attachmentView.FileName ?? attachmentView.ContentType);
+        }
+        #endregion
+
+        #region Send Email
+        // GET: Inbox View
+        [HttpGet]
+        public IActionResult Compose(int id)
+        {
+            var model = new SendEmailViewModel();
+            model.configId = id;
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult Compose(SendEmailViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Send the email
+                    _emailService.SendEmail(model, model.configId);
+
+                    // Redirect to a "success" page or show a success message
+                    return RedirectToAction("Index", "Home");
+                }
+                catch (Exception ex)
+                {                    
+                    ModelState.AddModelError("", "An error occurred while sending the email. Please try again later.");
+                }
+            }
+
+            // If we get here, the model state was invalid, so redisplay the form with errors
+            return View("Compose", model);
         }
         #endregion
 

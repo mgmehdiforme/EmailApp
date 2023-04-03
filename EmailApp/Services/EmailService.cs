@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using MimeKit;
 using Microsoft.VisualBasic;
 using System.Collections.Generic;
-using System.Net.Mail;
 
 namespace EmailApp.Services
 {
@@ -87,6 +86,19 @@ namespace EmailApp.Services
         /// The method returns the ID of the email configuration associated with the deleted message.
         /// </remarks>
         int SetMessageAsDeleted(int messageId);
+
+        /// <summary>
+        /// Sends an email using the given view model and email configuration ID.
+        /// </summary>
+        /// <param name="model">The SendEmailViewModel containing the email details.</param>
+        /// <param name="configId">The ID of the email configuration to use for sending the email.</param>
+        /// <remarks>
+        /// The method retrieves the email configuration using the provided ID from the database.
+        /// It then constructs a new MimeMessage object and sets the sender, recipients, subject, and body of the email.
+        /// If the view model contains any attachments, they are added to the email as well.
+        /// Finally, the email is sent using the SMTP settings from the email configuration.
+        /// </remarks>
+        void SendEmail(SendEmailViewModel model, int configId);
     }
 
     public class EmailService:IEmailService
@@ -171,6 +183,51 @@ namespace EmailApp.Services
 
             // return null if no message found
             return null;
+        }
+
+        public void SendEmail(SendEmailViewModel model ,int configId)
+        {
+            var emailConfig=_context.EmailConfig.Find(configId);
+            // Create a new MimeMessage
+            var message = new MimeMessage();
+
+            // Set the sender and recipients
+            message.From.Add(new MailboxAddress(emailConfig.From, emailConfig.UserName));
+            message.To.AddRange(GetAddresses(model.To));
+            if (!string.IsNullOrEmpty(model.Cc))
+            {
+                message.Cc.AddRange(GetAddresses(model.Cc));
+            }
+            if (!string.IsNullOrEmpty(model.Bcc))
+            {
+                message.Bcc.AddRange(GetAddresses(model.Bcc));
+            }
+
+            // Set the subject and body
+            message.Subject = model.Subject;
+            var bodyBuilder = new BodyBuilder();
+            bodyBuilder.HtmlBody = model.Body;
+            if (model.Attachments != null && model.Attachments.Length > 0)
+            {
+                foreach (var attachment in model.Attachments)
+                {
+                    using (var stream = attachment.OpenReadStream())
+                    {
+                        bodyBuilder.Attachments.Add(attachment.FileName, stream);
+                    }
+                }
+            }
+            message.Body = bodyBuilder.ToMessageBody();
+
+            // Send the email
+
+            using (var client = new MailKit.Net.Smtp.SmtpClient())
+            {
+                client.Connect(emailConfig.SmtpServer, emailConfig.SmtpPort, emailConfig.UseSSLForSmtp);
+                client.Authenticate(emailConfig.UserName, emailConfig.Password);
+                client.Send(message);
+                client.Disconnect(true);
+            }
         }
 
         private (Stream?,string,string) GetAttachmentFromServer(string messageId, string attachmentContentId, EmailConfig config)
@@ -413,6 +470,15 @@ namespace EmailApp.Services
                             config.UserName,//"your_email@gmail.com"
                             config.Password// "your_password"
                             );
+        }
+
+        private IEnumerable<MailboxAddress> GetAddresses(string addressList)
+        {
+            var addresses = addressList.Split(',');
+            foreach (var address in addresses)
+            {
+                yield return new MailboxAddress(address.Trim(), address.Trim());
+            }
         }
         #endregion
 
