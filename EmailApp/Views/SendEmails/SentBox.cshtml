@@ -1,11 +1,11 @@
-﻿@using EmailApp.DataModels;
-@using EmailApp.ViewModels;
-@model InboxViewModel
+﻿@using EmailApp.ViewModels;
+@model SendEmailListViewModel
 
 @{
-    ViewData["Title"] = "Inbox";
+    ViewData["Title"] = "Sent";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 
 <div class="container">
 
@@ -20,14 +20,6 @@
             <div class="list-group">
                 <a asp-action="Inbox" asp-controller="EmailConfigs" asp-route-id="@Model.ConfigId" asp-route-PageNumber="1" class="list-group-item list-group-item-action">
                     Inbox
-                    @if (Model.Synced)
-                    {
-                        <span class="badge bg-success">Synced</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">Not Sync : @Model.SyncError</span>
-                    }
                 </a>
                 <a asp-action="SentBox" asp-controller="SendEmails" asp-route-id="@Model.ConfigId" asp-route-PageNumber="1" class="list-group-item list-group-item-action Archived">
                     Sent
@@ -39,42 +31,27 @@
         </div>
         <div class="col-md-9">
 
-            <h3>@Model.CurrentFolderName</h3>
+            <h3>Sent</h3>
             <hr />
 
-            @if (Model.EmailMessages.Count > 0)
+            @if (Model.Emails.Count > 0)
             {
                 <div class="list-group">
-                    @foreach (var email in Model.EmailMessages)
+                    @foreach (var email in Model.Emails)
                     {
                         <div class="list-group-item">
                             <a asp-action="ViewEmail" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">
-                                        @email.From
-                                        @if (!email.IsRead)
-                                        {
-                                            <span class="badge bg-danger badge-danger">New</span>
-                                        }
-                                        @if (email.IsArchive)
-                                        {
-                                            <span class="badge bg-info">Archived</span>
-                                        }
+                                        @email.Subject
                                     </h5>
-                                    <small>@email.Date.ToLocalTime().ToString("yyyy-mm-dd")</small>
+                                    <small>@email.CreateOn.ToLocalTime().ToString("yyyy-mm-dd")</small>
                                 </div>
-                                <p class="mb-1">
-                                    @email.Subject
-                                </p>
                             </a>
                             <div class="btn-group position-absolute top-50" style="right:30px !important;z-index:999;" role="group">
                                 <a asp-action="SetAsDeleted" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber"
                                    class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">
                                     <i class="fa fa-trash"></i> Delete
-                                </a>
-                                <a asp-action="SetAsArchive" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber"
-                                   class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#archiveModal">
-                                    <i class="fa fa-archive"></i> @(email.IsArchive ? "UnArchive" : "Archive")
                                 </a>
                             </div>
                         </div>
@@ -85,13 +62,13 @@
                         @if (Model.CurrentPageNumber > 1)
                         {
                             <li class="page-item">
-                                <a class="page-link" aria-label="Previous" asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber-1)">
+                                <a class="page-link" aria-label="Previous" asp-action="SentBox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber-1)">
                                     <span aria-hidden="true">&laquo;</span>
                                     <span class="sr-only">Previous</span>
                                 </a>
                             </li>
                         }
-                        @for (int i = 1; i <= Model.TotalPageCount; i++)
+                        @for (int i = 1; i <= Model.TotalPages; i++)
                         {
                             if (i == Model.CurrentPageNumber)
                             {
@@ -102,14 +79,14 @@
                             else
                             {
                                 <li class="page-item">
-                                    <a class="page-link" asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(i)">@i</a>
+                                    <a class="page-link" asp-action="SentBox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(i)">@i</a>
                                 </li>
                             }
                         }
-                        @if (Model.CurrentPageNumber < Model.TotalPageCount)
+                        @if (Model.CurrentPageNumber < Model.TotalPages)
                         {
                             <li class="page-item">
-                                <a class="page-link" asp-action="Inbox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber+1)" aria-label="Next">
+                                <a class="page-link" asp-action="SentBox" asp-route-id="@Model.ConfigId" asp-route-pageNumber="@(Model.CurrentPageNumber+1)" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                     <span class="sr-only">Next</span>
                                 </a>

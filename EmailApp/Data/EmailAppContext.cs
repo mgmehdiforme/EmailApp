@@ -16,5 +16,6 @@ namespace EmailApp.Data
 
         public DbSet<EmailApp.DataModels.EmailConfig> EmailConfig { get; set; } = default!;
         public DbSet<EmailApp.DataModels.EmailMessage> EmailMessage { get; set; } = default!;
+        public DbSet<EmailApp.DataModels.SendEmail> SendEmail { get; set; } = default!;
     }
 }

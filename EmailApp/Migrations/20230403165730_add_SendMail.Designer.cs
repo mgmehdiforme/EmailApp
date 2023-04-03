@@ -4,6 +4,7 @@ using EmailApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmailApp.Migrations
 {
     [DbContext(typeof(EmailAppContext))]
-    partial class EmailAppContextModelSnapshot : ModelSnapshot
+    [Migration("20230403165730_add_SendMail")]
+    partial class add_SendMail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -142,14 +145,8 @@ namespace EmailApp.Migrations
                     b.Property<string>("Cc")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ConfigId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreateOn")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDraft")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -158,6 +155,9 @@ namespace EmailApp.Migrations
                     b.Property<string>("To")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("configId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

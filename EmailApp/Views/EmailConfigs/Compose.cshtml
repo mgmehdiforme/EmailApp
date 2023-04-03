@@ -16,7 +16,7 @@
             <div asp-validation-summary="All" class="text-danger"></div>
 
             <form asp-action="Compose" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="configId" value="@Model.configId" />
+                <input type="hidden" name="configId" value="@Model.ConfigId" />
                 <div class="form-group">
                     <label for="to">To:</label>
                     <input type="text" class="form-control" asp-for="To" placeholder="Enter recipient email address">

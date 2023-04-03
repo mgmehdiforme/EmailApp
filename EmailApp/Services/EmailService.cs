@@ -98,7 +98,7 @@ namespace EmailApp.Services
         /// If the view model contains any attachments, they are added to the email as well.
         /// Finally, the email is sent using the SMTP settings from the email configuration.
         /// </remarks>
-        void SendEmail(SendEmailViewModel model, int configId);
+        int SendEmail(SendEmailViewModel model, int configId);
     }
 
     public class EmailService:IEmailService
@@ -185,7 +185,7 @@ namespace EmailApp.Services
             return null;
         }
 
-        public void SendEmail(SendEmailViewModel model ,int configId)
+        public int SendEmail(SendEmailViewModel model ,int configId)
         {
             var emailConfig=_context.EmailConfig.Find(configId);
             // Create a new MimeMessage
@@ -226,7 +226,20 @@ namespace EmailApp.Services
                 client.Connect(emailConfig.SmtpServer, emailConfig.SmtpPort, emailConfig.UseSSLForSmtp);
                 client.Authenticate(emailConfig.UserName, emailConfig.Password);
                 client.Send(message);
+                var sendEmail = new DataModels.SendEmail
+                {
+                    Bcc = model.Cc,
+                    Subject = model.Subject,
+                    Body = model.Body,
+                    To = model.To,
+                    Cc = model.Cc,
+                    ConfigId = model.ConfigId,
+                    CreateOn = DateTime.Now
+                };
+                _context.SendEmail.Add(sendEmail);
+                _context.SaveChanges();
                 client.Disconnect(true);
+                return sendEmail.Id;
             }
         }
 

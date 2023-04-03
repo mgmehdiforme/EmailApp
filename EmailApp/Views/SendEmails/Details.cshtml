@@ -1,0 +1,26 @@
+﻿@model EmailApp.ViewModels.SendEmailViewModel
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="card">
+            <div class="card-header">
+                <h4>
+                    <a class="btn btn-primary btn-sm" asp-controller="SendEmails" asp-action="SentBox" asp-route-id="@Model.ConfigId" asp-route-PageNumber="@Model.CurrentPageNumber"> Back To Inbox </a>
+                    Subject :
+                    @Model.Subject
+                </h4>                
+            </div>
+            <div class="card-body">
+                <p>@Html.Raw(Model.Body)</p>
+            </div>
+            <div class="card-footer text-muted">
+                <p>Sent: @Model.CreateOn.Value.ToString("MMMM dd, yyyy hh:mm tt")</p>
+            </div>
+        </div>
+    </div>
+</div>

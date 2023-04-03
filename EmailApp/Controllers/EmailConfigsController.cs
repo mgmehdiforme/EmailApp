@@ -209,7 +209,7 @@ namespace EmailApp.Controllers
         public IActionResult Compose(int id)
         {
             var model = new SendEmailViewModel();
-            model.configId = id;
+            model.ConfigId = id;
             return View(model);
         }
 
@@ -221,10 +221,10 @@ namespace EmailApp.Controllers
                 try
                 {
                     // Send the email
-                    _emailService.SendEmail(model, model.configId);
+                    var id=_emailService.SendEmail(model, model.ConfigId);
 
                     // Redirect to a "success" page or show a success message
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Details", "SendEmails", new { id, model.ConfigId });
                 }
                 catch (Exception ex)
                 {                    
