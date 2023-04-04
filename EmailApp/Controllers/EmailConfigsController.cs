@@ -213,6 +213,33 @@ namespace EmailApp.Controllers
             return View(model);
         }
 
+        // GET: Inbox View
+        [HttpGet]
+        public IActionResult EditDraft(int draftId)
+        {
+            if (draftId == null || _context.SendEmail == null)
+            {
+                return NotFound();
+            }
+
+            var sendEmail = _context.SendEmail.Find(draftId);
+            if (sendEmail == null)
+            {
+                return NotFound();
+            }            
+            SendEmailViewModel viewModel = new SendEmailViewModel
+            {
+                Bcc = sendEmail.Bcc,
+                Body = sendEmail.Body,
+                Cc = sendEmail.Cc,
+                ConfigId = sendEmail.ConfigId,                
+                CreateOn = sendEmail.CreateOn,
+                Subject = sendEmail.Subject,
+                To = sendEmail.To
+            };
+            return View("Compose", viewModel);
+        }
+
         [HttpPost]
         public IActionResult Compose(SendEmailViewModel model)
         {

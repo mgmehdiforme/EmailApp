@@ -2,18 +2,18 @@
 
 @{
     ViewData["Title"] = "Details";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_LayoutWithSideBar.cshtml";
 }
 
 <div class="container">
     <div class="row">
         <div class="card">
             <div class="card-header">
-                <h4>
-                    <a class="btn btn-primary btn-sm" asp-controller="SendEmails" asp-action="SentBox" asp-route-id="@Model.ConfigId" asp-route-PageNumber="@Model.CurrentPageNumber"> Back To Inbox </a>
+                <h4>                    
                     Subject :
                     @Model.Subject
                 </h4>                
+                <h5>to: @Model.To</h5>
             </div>
             <div class="card-body">
                 <p>@Html.Raw(Model.Body)</p>

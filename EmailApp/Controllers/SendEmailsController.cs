@@ -29,7 +29,7 @@ namespace EmailApp.Controllers
             // Retrieve a paged list of sent emails
             var pageSize = 10;
             var emails = _context.SendEmail
-                .Where(x=>!x.IsDraft)
+                .Where(x=>!x.IsDraft && x.ConfigId==id)
                 .OrderByDescending(e => e.CreateOn)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -46,7 +46,8 @@ namespace EmailApp.Controllers
             {
                 Emails = emails,
                 CurrentPageNumber = pageNumber,
-                TotalPages = totalPages
+                TotalPages = totalPages,
+                ConfigId=id
             };
 
             // Display the paged list of sent emails view
@@ -58,7 +59,7 @@ namespace EmailApp.Controllers
             // Retrieve a paged list of sent emails
             var pageSize = 10;
             var emails = _context.SendEmail
-                .Where(x => x.IsDraft)
+                .Where(x => x.IsDraft & x.ConfigId==id)
                 .OrderByDescending(e => e.CreateOn)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -75,7 +76,8 @@ namespace EmailApp.Controllers
             {
                 Emails = emails,
                 CurrentPageNumber = pageNumber,
-                TotalPages = totalPages
+                TotalPages = totalPages,
+                ConfigId= id
             };
 
             // Display the paged list of sent emails view
@@ -83,7 +85,7 @@ namespace EmailApp.Controllers
         }
 
         // GET: SendEmails/Details/5
-        public async Task<IActionResult> Details(int? id, int ConfigId)
+        public async Task<IActionResult> Details(int? id, int pageNumber)
         {
             if (id == null || _context.SendEmail == null)
             {
@@ -96,26 +98,20 @@ namespace EmailApp.Controllers
             {
                 return NotFound();
             }
-
-            return View(sendEmail);
+            SendEmailViewModel viewModel = new SendEmailViewModel { 
+                Bcc= sendEmail.Bcc,
+                Body= sendEmail.Body,
+                Cc= sendEmail.Cc,
+                ConfigId = sendEmail.ConfigId,
+                CurrentPageNumber=pageNumber,
+                CreateOn= sendEmail.CreateOn,
+                Subject = sendEmail.Subject,
+                To = sendEmail.To
+            };
+            return View(viewModel);
         }
 
 
-        // GET: SendEmails/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null || _context.SendEmail == null)
-            {
-                return NotFound();
-            }
-
-            var sendEmail = await _context.SendEmail.FindAsync(id);
-            if (sendEmail == null)
-            {
-                return NotFound();
-            }
-            return View(sendEmail);
-        }
 
         // GET: SendEmails/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -151,7 +147,7 @@ namespace EmailApp.Controllers
             }
             
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(SentBox),new { sendEmail.ConfigId, pageNumber = 1 });
         }
 
         private bool SendEmailExists(int id)

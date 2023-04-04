@@ -188,6 +188,19 @@ namespace EmailApp.Services
         public int SendEmail(SendEmailViewModel model ,int configId)
         {
             var emailConfig=_context.EmailConfig.Find(configId);
+            var sendEmail = new DataModels.SendEmail
+            {
+                Bcc = model.Cc,
+                Subject = model.Subject,
+                Body = model.Body,
+                To = model.To,
+                Cc = model.Cc,
+                ConfigId = model.ConfigId,
+                CreateOn = DateTime.Now,
+                IsDraft=true
+            };
+            _context.SendEmail.Add(sendEmail);
+            _context.SaveChanges();
             // Create a new MimeMessage
             var message = new MimeMessage();
 
@@ -226,17 +239,7 @@ namespace EmailApp.Services
                 client.Connect(emailConfig.SmtpServer, emailConfig.SmtpPort, emailConfig.UseSSLForSmtp);
                 client.Authenticate(emailConfig.UserName, emailConfig.Password);
                 client.Send(message);
-                var sendEmail = new DataModels.SendEmail
-                {
-                    Bcc = model.Cc,
-                    Subject = model.Subject,
-                    Body = model.Body,
-                    To = model.To,
-                    Cc = model.Cc,
-                    ConfigId = model.ConfigId,
-                    CreateOn = DateTime.Now
-                };
-                _context.SendEmail.Add(sendEmail);
+                sendEmail.IsDraft=false;
                 _context.SaveChanges();
                 client.Disconnect(true);
                 return sendEmail.Id;

@@ -4,42 +4,20 @@
 
 @{
     ViewData["Title"] = "Inbox";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_LayoutWithSideBar.cshtml";
 }
 
-<div class="container">
+            <h3>@Model.CurrentFolderName
 
-    <div class="row">
-        <div class="col-md-3">
-            <div class="list-group">
-                <a asp-action="Compose" asp-route-id="@Model.ConfigId" class="btn btn-danger ">
-                    Compose
-                </a>
-            </div>
-            <hr />
-            <div class="list-group">
-                <a asp-action="Inbox" asp-controller="EmailConfigs" asp-route-id="@Model.ConfigId" asp-route-PageNumber="1" class="list-group-item list-group-item-action">
-                    Inbox
-                    @if (Model.Synced)
-                    {
-                        <span class="badge bg-success">Synced</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">Not Sync : @Model.SyncError</span>
-                    }
-                </a>
-                <a asp-action="SentBox" asp-controller="SendEmails" asp-route-id="@Model.ConfigId" asp-route-PageNumber="1" class="list-group-item list-group-item-action Archived">
-                    Sent
-                </a>
-                <a asp-action="DraftBox" asp-controller="SendEmails" asp-route-id="@Model.ConfigId" asp-route-PageNumber="1" class="list-group-item list-group-item-action ">
-                    Drafts
-                </a>
-            </div>
-        </div>
-        <div class="col-md-9">
-
-            <h3>@Model.CurrentFolderName</h3>
+            </h3>
+@if (Model.Synced)
+{
+    <span class="badge bg-success float-end">Synced</span>
+}
+else
+{
+    <span class="badge bg-danger float-end">Not Sync : @Model.SyncError</span>
+}
             <hr />
 
             @if (Model.EmailMessages.Count > 0)
@@ -51,7 +29,7 @@
                             <a asp-action="ViewEmail" asp-route-id="@email.Id" asp-route-PageNumber="@Model.CurrentPageNumber" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">
-                                        @email.From
+                                        From : @email.From
                                         @if (!email.IsRead)
                                         {
                                             <span class="badge bg-danger badge-danger">New</span>
@@ -64,7 +42,7 @@
                                     <small>@email.Date.ToLocalTime().ToString("yyyy-mm-dd")</small>
                                 </div>
                                 <p class="mb-1">
-                                    @email.Subject
+                                  Subject:  @email.Subject
                                 </p>
                             </a>
                             <div class="btn-group position-absolute top-50" style="right:30px !important;z-index:999;" role="group">
@@ -122,6 +100,3 @@
             {
                 <p>No emails found.</p>
             }
-        </div>
-    </div>
-</div>
