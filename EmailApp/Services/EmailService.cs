@@ -330,7 +330,7 @@ namespace EmailApp.Services
             var result = new InboxViewModel();
 
             var searchQuery = SearchQuery.New;
-            if (_context.EmailMessage.Count() == 0)
+            if (_context.EmailMessage.Count(x=>!x.IsDeleted && x.EmailConfigId==ConfigId) == 0)
                 searchQuery = SearchQuery.All;
 
             List<MimeKit.MimeMessage> serverMessages = new List<MimeKit.MimeMessage>();
@@ -376,11 +376,11 @@ namespace EmailApp.Services
 
             
             var startIndex = pageSize * (pageNumber - 1);
-            result.TotalPageCount = _context.EmailMessage.Count(x=>!x.IsDeleted) / pageSize;
+            result.TotalPageCount = _context.EmailMessage.Count(x=>!x.IsDeleted && x.EmailConfigId==ConfigId) / pageSize;
 
             result.ConfigId = ConfigId;
             result.CurrentFolderName = "Inbox";
-            result.EmailMessages = _context.EmailMessage.Where(x => !x.IsDeleted).Skip(startIndex).Take(pageSize).ToList();
+            result.EmailMessages = _context.EmailMessage.Where(x => !x.IsDeleted && x.EmailConfigId == ConfigId).Skip(startIndex).Take(pageSize).ToList();
             result.CurrentPageNumber = pageNumber;
             return result;
         }
